@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '8.0'
+
+target 'Z3LocationService_Example' do
+  pod 'Z3LocationService', :path => '../'
+
+  target 'Z3LocationService_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
