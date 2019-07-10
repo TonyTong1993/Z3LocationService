@@ -1,0 +1,6 @@
+framework module Pods_Z3LocationService_Example {
+  umbrella header "Pods-Z3LocationService_Example-umbrella.h"
+
+  export *
+  module * { export * }
+}
