@@ -1,9 +1,9 @@
 {
   "name": "Z3LocationService",
-  "version": "0.1.0",
-  "summary": "A short description of Z3LocationService.",
+  "version": "0.1.1",
+  "summary": "zzht for Z3LocationService.",
   "description": "TODO: Add long description of the pod here.",
-  "homepage": "https://github.com/Tony Tony/Z3LocationService",
+  "homepage": "https://github.com/TonyTong1993/Z3LocationService",
   "license": {
     "type": "MIT",
     "file": "LICENSE"
@@ -12,11 +12,11 @@
     "Tony Tony": "tongwanhua1993@163.com"
   },
   "source": {
-    "git": "https://github.com/Tony Tony/Z3LocationService.git",
-    "tag": "0.1.0"
+    "git": "https://github.com/TonyTong1993/Z3LocationService.git",
+    "tag": "0.1.1"
   },
   "platforms": {
-    "ios": "10.0"
+    "ios": "8.0"
   },
   "source_files": "Z3LocationService/Classes/**/*",
   "dependencies": {
