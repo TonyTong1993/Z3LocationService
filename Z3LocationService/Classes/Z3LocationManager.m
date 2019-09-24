@@ -47,10 +47,13 @@ static double const defaultDistanceFilter = 5.0f;
         [self stopUpdatingLocation];
     }else {
         [self startUpdatingLocation];
+        [self.manager startUpdatingHeading];
         [self stop];
     }
      _dataSource = locationDataSource;
 }
+
+
 
 - (void)stop {
     if ([self.dataSource isKindOfClass:[Z3SimulatedLocationDataSource class]]) {
@@ -102,13 +105,19 @@ static double const defaultDistanceFilter = 5.0f;
     }
 }
 
+- (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading {
+    
+}
+
 #pragma mark - private
 - (void)startUpdatingLocation {
     [self.manager startUpdatingLocation];
+    [self.manager startUpdatingHeading];
 }
 
 - (void)stopUpdatingLocation {
     [self.manager stopUpdatingLocation];
+    [self.manager stopUpdatingHeading];
 }
 
 - (void)postMessage:(NSString * _Nonnull)message {

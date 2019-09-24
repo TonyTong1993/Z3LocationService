@@ -11,8 +11,19 @@
 NS_ASSUME_NONNULL_BEGIN
 @class CLLocation,Z3LocationDataSource;
 typedef void(^OnLocationDidChangeListener)(CLLocation *location);
+typedef void(^OnHeadingDidChangeListener)(double heading);
 @interface Z3LocationManager : NSObject
 
+/**
+ 当前位置更新的状态,start:YES时,说明已经开启,NO,说明未开启
+ */
+@property (nonatomic,readonly,assign) BOOL start;
+
+
+/**
+ 开启位置更新失败的error
+ */
+@property (nonatomic,readonly,strong) NSError *error;
 /**
  最近一次更新的位置
  */
@@ -23,6 +34,7 @@ typedef void(^OnLocationDidChangeListener)(CLLocation *location);
 - (instancetype)init NS_UNAVAILABLE;
 -(void)registerLocationDidChangeListener:(OnLocationDidChangeListener)listener;
 - (void)setLocationDataSource:(Z3LocationDataSource  * _Nullable )locationDataSource;
+
 /**
  停止位置更新，并保存为同步的位置数据
  */
