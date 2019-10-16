@@ -113,11 +113,13 @@ static double const defaultDistanceFilter = 5.0f;
 - (void)startUpdatingLocation {
     [self.manager startUpdatingLocation];
     [self.manager startUpdatingHeading];
+    _start = YES;
 }
 
 - (void)stopUpdatingLocation {
     [self.manager stopUpdatingLocation];
     [self.manager stopUpdatingHeading];
+    _start = NO;
 }
 
 - (void)postMessage:(NSString * _Nonnull)message {

@@ -39,6 +39,7 @@ typedef void(^OnHeadingDidChangeListener)(double heading);
  停止位置更新，并保存为同步的位置数据
  */
 - (void)stop;
+- (void)startUpdatingLocation;
 @end
 extern NSNotificationName Z3LocationManagerChangeAuthorizationStatusNotificationName;
 extern NSString * const Z3LocationManagerUserInfoKey;
