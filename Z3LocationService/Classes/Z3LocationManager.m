@@ -10,9 +10,14 @@
 #import <CoreLocation/CoreLocation.h>
 #import "Z3SimulatedLocationDataSource.h"
 #import "Z3LocationPrivate.h"
-@interface Z3LocationManager()<CLLocationManagerDelegate>
+@interface Z3LocationManager()<CLLocationManagerDelegate> {
+    CLAuthorizationStatus _lastStatus;//上一次的授权状态
+    NSLock *_lock;
+}
 @property (nonatomic,strong) CLLocationManager *manager;
 @property (nonatomic,copy) OnLocationDidChangeListener listener;
+@property (nonatomic,copy) OnHeadingDidChangeListener headingListener;
+@property (nonatomic,copy) OnAuthorizationStatusDidChangeListener statusListener;
 @property (nonatomic,strong) Z3LocationDataSource *dataSource;
 @end
 @implementation Z3LocationManager
@@ -33,9 +38,10 @@ static double const defaultDistanceFilter = 5.0f;
         _manager.delegate = self;
         _manager.distanceFilter = defaultDistanceFilter;
         _manager.allowsBackgroundLocationUpdates = YES;
-        _manager.desiredAccuracy = kCLLocationAccuracyBest;
+        _manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
         _manager.pausesLocationUpdatesAutomatically = NO;
-        
+        _lastStatus = [CLLocationManager authorizationStatus];
+        _lock = [[NSLock alloc] init];
     }
     return self;
 }
@@ -53,8 +59,6 @@ static double const defaultDistanceFilter = 5.0f;
      _dataSource = locationDataSource;
 }
 
-
-
 - (void)stop {
     if ([self.dataSource isKindOfClass:[Z3SimulatedLocationDataSource class]]) {
         [self.dataSource stop];
@@ -69,6 +73,14 @@ static double const defaultDistanceFilter = 5.0f;
     _listener = listener;
 }
 
+- (void)registerLocationAuthorizationStatusDidChangeListener:(OnAuthorizationStatusDidChangeListener)listener {
+    _statusListener = listener;
+}
+
+- (void)registerLocationHeadingDidChangeListener:(OnHeadingDidChangeListener)listener {
+    _headingListener = listener;
+}
+
 - (void)locationDataSouceDidUpdateLocation:(NSNotification *)notification {
     NSDictionary *userInfo = notification.userInfo;
     CLLocation *location = userInfo[@"message"];
@@ -81,32 +93,40 @@ static double const defaultDistanceFilter = 5.0f;
 #pragma mark - CLLocationManagerDelegate
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     switch (status) {
-        case kCLAuthorizationStatusDenied:
-            [self postMessage:@"GPS已被禁用"];
-            break;
-        case kCLAuthorizationStatusRestricted:
-            [self postMessage:@"GPS使用受限制"];
-            break;
         case kCLAuthorizationStatusNotDetermined:
             [manager requestWhenInUseAuthorization];
             break;
-        default:
+        case kCLAuthorizationStatusAuthorizedWhenInUse:
             [self startUpdatingLocation];
             break;
+        case kCLAuthorizationStatusAuthorizedAlways:
+            [self startUpdatingLocation];
+            break;
+        default:
+            break;
+    }
+    
+    if (status != kCLAuthorizationStatusNotDetermined && _lastStatus != status) {
+        if (self.statusListener) {
+            self.statusListener(_lastStatus, status);
+        }
+        _lastStatus = status;
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
     CLLocation *location = [locations lastObject];
-    //TODO:数据精度的筛选
-     _location = [location copy];
+    _location = location;
+    [self addlocaion:location];
     if (_listener) {
         _listener(location);
     }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading {
-    
+    if (self.headingListener) {
+        self.headingListener(newHeading.trueHeading);
+    }
 }
 
 #pragma mark - private
@@ -122,11 +142,27 @@ static double const defaultDistanceFilter = 5.0f;
     _start = NO;
 }
 
-- (void)postMessage:(NSString * _Nonnull)message {
-    [[NSNotificationCenter defaultCenter] postNotificationName:Z3LocationManagerChangeAuthorizationStatusNotificationName object:nil userInfo:@{Z3LocationManagerUserInfoKey:message}];
+@synthesize cache = _cache;
+- (NSMutableArray *)cache {
+    if (!_cache) {
+        _cache = [[NSMutableArray alloc] initWithCapacity:5000];
+    }
+    return _cache;
+}
+
+- (void)addlocaion:(CLLocation *)location{
+    [_lock lock];
+    [_cache addObject:location];
+    [_lock unlock];
+}
+
+- (void)removeAllCacheLocations {
+    [_lock lock];
+    [_cache removeAllObjects];
+    [_lock unlock];
 }
 
 @end
-NSNotificationName Z3LocationManagerChangeAuthorizationStatusNotificationName = @"com.zzht.change.authorization.status";
+
 NSString * const Z3LocationManagerUserInfoKey = @"location.manager.key";
 
