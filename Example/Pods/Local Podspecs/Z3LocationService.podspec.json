@@ -21,7 +21,7 @@
   "source_files": "Z3LocationService/Classes/**/*",
   "dependencies": {
     "CoordinateTransform": [
-      "~> 0.1.1"
+      "~> 0.1.2"
     ]
   }
 }
