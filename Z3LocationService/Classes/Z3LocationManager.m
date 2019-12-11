@@ -19,6 +19,7 @@
 @property (nonatomic,copy) OnHeadingDidChangeListener headingListener;
 @property (nonatomic,copy) OnAuthorizationStatusDidChangeListener statusListener;
 @property (nonatomic,strong) Z3LocationDataSource *dataSource;
+@property (nonatomic,copy) void (^complication)(CLLocation *location,NSError *error);
 @end
 @implementation Z3LocationManager
 + (instancetype)manager {
@@ -90,6 +91,16 @@ static double const defaultDistanceFilter = 5.0f;
     }
 }
 
+- (void)requestLocation:(void (^)(CLLocation *lcoation,NSError *error))complication {
+    self.complication = complication;
+    if (@available(iOS 9.0, *)) {
+        [_manager requestLocation];
+    } else {
+        // Fallback on earlier versions
+       
+    }
+}
+
 #pragma mark - CLLocationManagerDelegate
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
     switch (status) {
@@ -97,10 +108,30 @@ static double const defaultDistanceFilter = 5.0f;
             [manager requestWhenInUseAuthorization];
             break;
         case kCLAuthorizationStatusAuthorizedWhenInUse:
-            [self startUpdatingLocation];
+        {
+            if (self.singleLocation) {
+                if (@available(iOS 9.0, *)) {
+                    [manager requestLocation];
+                } else {
+                    // Fallback on earlier versions
+                }
+            }else {
+                [self startUpdatingLocation];
+            }
+        }
             break;
         case kCLAuthorizationStatusAuthorizedAlways:
-            [self startUpdatingLocation];
+        {
+            if (self.singleLocation) {
+                if (@available(iOS 9.0, *)) {
+                    [manager requestLocation];
+                } else {
+                    // Fallback on earlier versions
+                }
+            }else {
+                [self startUpdatingLocation];
+            }
+        }
             break;
         default:
             break;
@@ -121,11 +152,21 @@ static double const defaultDistanceFilter = 5.0f;
     if (_listener) {
         _listener(location);
     }
+    
+    if (self.complication) {
+        self.complication(location, nil);
+    }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading {
     if (self.headingListener) {
         self.headingListener(newHeading.trueHeading);
+    }
+}
+
+- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
+    if (self.complication) {
+        self.complication(nil, error);
     }
 }
 

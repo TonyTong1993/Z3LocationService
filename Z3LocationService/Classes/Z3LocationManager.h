@@ -20,6 +20,12 @@ typedef void(^OnHeadingDidChangeListener)(double heading);
  */
 @property (nonatomic,readonly,assign) BOOL start;
 
+
+/**
+ 是否是单次定位
+ */
+@property (nonatomic,assign) BOOL singleLocation;
+
 /**
  开启位置更新失败的error
  */
@@ -46,6 +52,8 @@ typedef void(^OnHeadingDidChangeListener)(double heading);
 -(void)registerLocationHeadingDidChangeListener:(OnHeadingDidChangeListener _Nullable)listener;
 -(void)registerLocationAuthorizationStatusDidChangeListener:(OnAuthorizationStatusDidChangeListener _Nullable)listener;
 - (void)setLocationDataSource:(Z3LocationDataSource  * _Nullable )locationDataSource;
+
+- (void)requestLocation:(void (^)(CLLocation * _Nullable lcoation,NSError * _Nullable error))complication;
 
 /**
  停止位置更新，并保存为同步的位置数据
