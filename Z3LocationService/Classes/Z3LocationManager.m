@@ -155,6 +155,7 @@ static double const defaultDistanceFilter = 5.0f;
     
     if (self.complication) {
         self.complication(location, nil);
+        self.complication = nil;
     }
 }
 
@@ -167,6 +168,7 @@ static double const defaultDistanceFilter = 5.0f;
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
     if (self.complication) {
         self.complication(nil, error);
+        self.complication = nil;
     }
 }
 
