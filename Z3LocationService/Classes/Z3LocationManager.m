@@ -94,6 +94,8 @@ static double const defaultDistanceFilter = 5.0f;
 - (void)requestLocation:(void (^)(CLLocation *lcoation,NSError *error))complication {
     self.complication = complication;
     if (@available(iOS 9.0, *)) {
+        //丹阳工程，取消高精度要求
+        _manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
         [_manager requestLocation];
     } else {
         // Fallback on earlier versions
